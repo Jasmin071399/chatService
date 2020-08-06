@@ -8,7 +8,7 @@ import (
 	"../utils"
 )
 
-//retrieve list of usernames from server
+// GetUserNames retrieve list of usernames from server
 func GetUserNames() []string {
 	//get the response from server
 	resp, err := http.Get(utils.URL + "/username")

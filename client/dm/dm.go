@@ -1,40 +1,27 @@
 package dm
 
 import (
-	"fmt"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
 
 	"../utils"
 )
 
-//prints error when user enter invalid message
-func printMessageError() {
-	fmt.Println()
-	fmt.Println("Please enter a message!")
-	fmt.Println()
-}
+//retrieve list of usernames from server
+func GetUserNames() []string {
+	//get the response from server
+	resp, err := http.Get(utils.URL + "/username")
+	utils.Check(err)
+	defer resp.Body.Close()
 
-func RunDM(sender string) {
-	availableUsers := getUserNames()
-	utils.PrintStringSlice(availableUsers)
-ChooseReceiver:
-	receiver := utils.GetInput("Send message to: ")
-	if !utils.StringInSlice(receiver, availableUsers) {
-		fmt.Println("That user is not available")
-		goto ChooseReceiver
-	}
-	quit := make(chan byte)
-	go listenForDm(sender, receiver, quit)
-GetMessage:
-	message := utils.GetInput("")
-	if message == "quit" {
-		quit <- 'q'
-		return
-	}
-	if message == "" {
-		printMessageError()
-		goto GetMessage
-	}
-	sendMessage(sender, receiver, message)
-	goto GetMessage
+	users := make([]string, 0)
+	//read response and convert to byte
+	respBody, err := ioutil.ReadAll(resp.Body)
+	utils.Check(err)
 
+	//convert to list
+	json.Unmarshal(respBody, &users)
+
+	return users
 }
